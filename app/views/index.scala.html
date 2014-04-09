@@ -1,0 +1,82 @@
+@(message: String)
+ 
+@main("Welcome to Play") {
+ 
+    <ul id="patients" class="container"></ul>
+    
+    <hr>
+    
+    <button id="create-new-patient">Create new Patient</button>
+    
+    <script>
+    	function loadListOfPatients(){
+			$('#patients').empty();
+        	
+			$.get('/patients', function(patients){
+				$.each(patients, function(arrayIndex, patient){
+					$('<li>')
+					.append(patient.address)
+					.append(', ')
+					.append(patient.name)
+					.append(' (')
+					.append(patient.id)
+					.append(')')
+					.append(' ')
+					.append(
+						$('<button>')
+						.text('GET')
+						.click(function(){
+							location.href = "/patients/" + patient.id;
+						})
+					)
+					.append(' ')
+					.append(
+						$('<button>')
+						.text('Delete')
+						.click(function(){
+							$.ajax({
+								url: '/patients/' + patient.id,
+								type: 'DELETE'
+							})
+							.always(function(){
+								loadListOfPatients();
+							});
+						})
+					)
+					.append(' ')
+					.append(
+						$('<button>')
+						.text('Update')
+						.click(function(){
+							$.ajax({
+								url: '/patients/' + patient.id,
+								type: 'PUT',
+								data: {
+									name: prompt("Patient name please?", patient.name),
+									address: prompt("Patient address please?", patient.address)
+								}
+							})
+							.always(loadListOfPatients);
+						})
+					)
+					.appendTo('#patients');
+				});
+			});
+    	}
+ 
+    	$(loadListOfPatients);
+    	
+		$('#create-new-patient').click(function(){
+			$.ajax({
+				url: '/patients',
+				type: 'PUT',
+				data: {
+					name: prompt("Patient name please?"),
+					address: prompt("Patient address please?")
+				}
+			})
+			.always(loadListOfPatients);
+		});
+    </script>
+ 
+}
